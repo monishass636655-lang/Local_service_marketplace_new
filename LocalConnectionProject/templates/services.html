@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Services</title>
+</head>
+<body>
+
+<h1>All Services</h1>
+
+<ul>
+{% for service in services %}
+    <li>
+        <a href="/services/{{ service.id }}/">
+            {{ service.name }}
+        </a>
+    </li>
+{% endfor %}
+</ul>
+
+<a href="/">Back to Home</a>
+
+</body>
+</html>

@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}Register | Local Service Marketplace{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: flex-start; min-height: 80vh; padding: 2rem 0;">
+    <div class="start-card" style="width: 100%; max-width: 600px; padding: 2.5rem;">
+        <h2 style="text-align: center; margin-bottom: 0.5rem;">Create an Account</h2>
+        <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem;">Join as a customer to book
+            services or as a professional provider.</p>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="badge badge-warning"
+            style="display: block; text-align: center; margin-bottom: 1rem; padding: 0.75rem;">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <form method="POST" action="{% url 'register' %}" style="display: flex; flex-direction: column; gap: 1.25rem;">
+            {% csrf_token %}
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <!-- Role -->
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; grid-column: 1 / -1;">
+                    <label for="role" style="font-weight: 500; font-size: 0.95rem;">I want to...</label>
+                    <select id="role" name="role" required onchange="toggleProviderFields()"
+                        style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; background: var(--bg-color); color: var(--text-color);">
+                        <option value="customer">Hire Services (Customer)</option>
+                        <option value="provider">Offer Services (Provider)</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="first_name" style="font-weight: 500; font-size: 0.95rem;">First Name</label>
+                    <input type="text" id="first_name" name="first_name" required
+                        style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; background: var(--bg-color); color: var(--text-color);">
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="last_name" style="font-weight: 500; font-size: 0.95rem;">Last Name</label>
+                    <input type="text" id="last_name" name="last_name" required
+                        style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; background: var(--bg-color); color: var(--text-color);">
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <label for="username" style="font-weight: 500; font-size: 0.95rem;">Username</label>
+                <input type="text" id="username" name="username" required
+                    style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; background: var(--bg-color); color: var(--text-color);">
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <label for="email" style="font-weight: 500; font-size: 0.95rem;">Email</label>
+                <input type="email" id="email" name="email" required
+                    style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; background: var(--bg-color); color: var(--text-color);">
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <label for="password" style="font-weight: 500; font-size: 0.95rem;">Password</label>
+                <input type="password" id="password" name="password" required
+                    style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; background: var(--bg-color); color: var(--text-color);">
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <label for="phone" style="font-weight: 500; font-size: 0.95rem;">Phone Number</label>
+                <input type="text" id="phone" name="phone" required
+                    style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; background: var(--bg-color); color: var(--text-color);">
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <label for="location" style="font-weight: 500; font-size: 0.95rem;">Location (Address)</label>
+                <input type="text" id="location" name="location" required placeholder="e.g. 123 Main St, Bangalore, KA"
+                    style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; background: var(--bg-color); color: var(--text-color);">
+            </div>
+
+            <!-- Conditional Provider Fields -->
+            <div id="provider-fields"
+                style="display: none; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem; padding-top: 1rem; border-top: 1px dashed var(--border-color);">
+                <div
+                    style="display: flex; flex-direction: column; gap: 0.5rem; grid-column: 1 / -1; margin-bottom: 0.5rem;">
+                    <strong style="color: var(--primary-color);">Provider Profile Details</strong>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Fill these out to set up your
+                        professional profile.</p>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="experience" style="font-weight: 500; font-size: 0.95rem;">Years of Experience</label>
+                    <input type="number" id="experience" name="experience" value="0" min="0"
+                        style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; background: var(--bg-color); color: var(--text-color);">
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="price" style="font-weight: 500; font-size: 0.95rem;">Base Hourly Rate ($)</label>
+                    <input type="number" id="price" name="price" value="0" min="0" step="0.01"
+                        style="padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 1rem; background: var(--bg-color); color: var(--text-color);">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary"
+                style="margin-top: 1.5rem; padding: 0.85rem; font-size: 1.05rem; font-weight: 600;">Complete
+                Registration</button>
+
+            <p style="text-align: center; margin-top: 1rem; font-size: 0.95rem; color: var(--text-muted);">
+                Already have an account? <a href="{% url 'login' %}"
+                    style="color: var(--primary-color); font-weight: 500;">Log in</a>
+            </p>
+        </form>
+    </div>
+</div>
+
+<script>
+    function toggleProviderFields() {
+        const role = document.getElementById('role').value;
+        const providerFields = document.getElementById('provider-fields');
+        if (role === 'provider') {
+            providerFields.style.display = 'grid';
+        } else {
+            providerFields.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

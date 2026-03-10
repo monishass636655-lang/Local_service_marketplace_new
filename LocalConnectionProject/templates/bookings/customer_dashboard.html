@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% load custom_tags %}
+
+{% block title %}My Bookings | Local Service Marketplace{% endblock %}
+
+{% block content %}
+<section class="hero" style="padding: 3rem 1rem; text-align: center; margin-bottom: 2rem;">
+    <h1>My Bookings</h1>
+    <p>Track your service requests, expert status, and payment details.</p>
+</section>
+
+<div class="container" style="display: flex; gap: 2rem; align-items: flex-start;">
+
+    <!-- MAIN BOOKINGS COLUMN -->
+    <div style="flex: 2;">
+        <div class="dashboard-section">
+            <div class="start-format-grid" style="grid-template-columns: 1fr;">
+
+                {% for booking in bookings %}
+                <div class="start-card" style="display: flex; gap: 1.5rem; align-items: flex-start;">
+
+                    {% context_image booking.service.category.name booking.service.id as booking_img %}
+                    <div style="flex-shrink: 0; width: 110px; height: 110px; border-radius: 8px; overflow: hidden;">
+                        <img src="{{ booking_img }}" alt="{{ booking.service.category.name }}"
+                            style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+
+                    <div style="flex-grow: 1;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                            <div>
+                                <h3 style="margin: 0 0 0.2rem 0;">{{ booking.service.name }}</h3>
+                                <p style="margin: 0; color: var(--text-muted); font-size: 0.875rem;">{{
+                                    booking.service.category.name }}</p>
+                            </div>
+                            {% if booking.status == 'pending' %}
+                            <span class="badge badge-warning" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">⌛
+                                Pending</span>
+                            {% elif booking.status == 'accepted' %}
+                            <span class="badge badge-info" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">✅
+                                Accepted</span>
+                            {% elif booking.status == 'completed' %}
+                            <span class="badge badge-success" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">🌟
+                                Completed</span>
+                            {% else %}
+                            <span class="badge badge-warning"
+                                style="font-size: 0.85rem; padding: 0.35rem 0.75rem; text-transform: capitalize;">{{
+                                booking.status }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div
+                            style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; background: var(--bg-color); padding: 0.75rem; border-radius: 6px; margin-bottom: 0.75rem;">
+                            <div>
+                                <strong
+                                    style="display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem;">Expert</strong>
+                                {% provider_image booking.provider booking.provider.id as prov_img %}
+                                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <img src="{{ prov_img }}" alt="Expert"
+                                        style="width: 22px; height: 22px; border-radius: 50%; object-fit: cover;">
+                                    <span style="font-size: 0.9rem;">{{ booking.provider.first_name }} {{
+                                        booking.provider.last_name }}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <strong
+                                    style="display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem;">Schedule</strong>
+                                <span style="font-size: 0.9rem;">📅 {{ booking.date }} at {{ booking.time }}</span>
+                            </div>
+                            <div>
+                                <strong
+                                    style="display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem;">Address</strong>
+                                <span style="font-size: 0.9rem;">📍 {{ booking.customer.location }}</span>
+                            </div>
+                            <div>
+                                <strong
+                                    style="display: block; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem;">Amount</strong>
+                                <span style="font-size: 0.9rem; font-weight: 600; color: var(--primary-color);">${{
+                                    booking.service.price }}</span>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            {% if booking.payment_status == 'paid' %}
+                            <span class="badge badge-success">✅ Payment Successful</span>
+                            {% else %}
+                            <span class="badge badge-warning">⏳ Unpaid</span>
+                            {% endif %}
+
+                            {% if booking.payment_status == 'unpaid' and booking.status != 'pending' and booking.status
+                            != 'cancelled' %}
+                            <a href="{% url 'create_razorpay_order' booking.id %}" class="btn btn-primary"
+                                style="padding: 0.4rem 1rem; font-size: 0.85rem; text-decoration: none;">💳 Pay
+                                Online</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="start-card" style="text-align: center; padding: 3rem; grid-column: 1 / -1;">
+                    <h3>No Bookings Yet</h3>
+                    <p>You haven't requested any services yet.</p>
+                    <a href="{% url 'services_list' %}" class="btn btn-primary"
+                        style="margin-top: 1rem; display: inline-block;">Browse Services</a>
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFICATIONS SIDEBAR -->
+    <div style="flex: 1; position: sticky; top: 2rem;">
+        <div class="stat-card" style="padding: 1.5rem; text-align: left;">
+            <h3
+                style="margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem; color: var(--secondary-color); font-size: 1rem;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                Notifications
+            </h3>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                {% for notification in notifications %}
+                <div
+                    style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); font-size: 0.875rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                        {% if notification.notification_type == 'payment_success' %}
+                        <span class="badge badge-success" style="font-size: 0.7rem;">{{
+                            notification.get_notification_type_display }}</span>
+                        {% elif notification.notification_type == 'booking_completed' %}
+                        <span class="badge badge-success" style="font-size: 0.7rem;">{{
+                            notification.get_notification_type_display }}</span>
+                        {% else %}
+                        <span class="badge badge-info" style="font-size: 0.7rem;">{{
+                            notification.get_notification_type_display }}</span>
+                        {% endif %}
+                        <span style="color: var(--text-muted); font-size: 0.75rem;">{{ notification.created_at|timesince
+                            }} ago</span>
+                    </div>
+                    <p style="margin: 0; line-height: 1.4;">{{ notification.message }}</p>
+                </div>
+                {% empty %}
+                <p style="color: var(--text-muted); text-align: center; padding: 1rem 0;">No notifications yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

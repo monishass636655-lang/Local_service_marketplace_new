@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}Online Payment | Local Service Marketplace{% endblock %}
+
+{% block content %}
+<section class="hero" style="padding: 2rem 1rem; text-align: center; margin-bottom: 2rem;">
+    <h1>💳 Online Payment</h1>
+    <p>Secure payment powered by Razorpay</p>
+</section>
+
+<div style="max-width: 480px; margin: 0 auto;">
+    <div class="stat-card" style="padding: 2rem; text-align: center;">
+        <div
+            style="width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                <line x1="1" y1="10" x2="23" y2="10"></line>
+            </svg>
+        </div>
+
+        <h2 style="margin-bottom: 0.25rem;">{{ booking.service.name }}</h2>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Service by {{ booking.provider.first_name }} {{
+            booking.provider.last_name }}</p>
+
+        <div
+            style="background: var(--bg-color); border-radius: 10px; padding: 1.25rem; margin-bottom: 1.5rem; text-align: left; display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                <span style="color: var(--text-muted);">Service</span>
+                <span>{{ booking.service.name }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                <span style="color: var(--text-muted);">Date</span>
+                <span>{{ booking.date }} at {{ booking.time }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                <span style="color: var(--text-muted);">Your Address</span>
+                <span>{{ booking.customer.location }}</span>
+            </div>
+            <div
+                style="border-top: 1px solid var(--border-color); padding-top: 0.75rem; display: flex; justify-content: space-between; font-weight: 700; font-size: 1.1rem;">
+                <span>Total Amount</span>
+                <span style="color: var(--primary-color);">₹{{ booking.service.price }}</span>
+            </div>
+        </div>
+
+        {% if demo_mode %}
+        <div
+            style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem; font-size: 0.875rem; color: #856404;">
+            ⚠️ <strong>Test Mode:</strong> Payment gateway is in simulation mode. Click "Pay Now" to simulate a
+            successful payment.
+        </div>
+        {% endif %}
+
+        <button id="pay-btn" class="btn btn-primary"
+            style="width: 100%; padding: 0.85rem; font-size: 1.05rem; font-weight: 600; border: none; cursor: pointer;">
+            💳 Pay ₹{{ booking.service.price }} Now
+        </button>
+
+        <p style="margin-top: 1rem; font-size: 0.8rem; color: var(--text-muted);">
+            🔒 Secured by Razorpay — UPI, Cards, Net Banking, Wallets accepted
+        </p>
+
+        <a href="{% url 'customer_dashboard' %}"
+            style="display: block; margin-top: 1rem; font-size: 0.875rem; color: var(--text-muted);">← Back to My
+            Bookings</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if not demo_mode %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+{% endif %}
+<script>
+    const bookingId = {{ booking.id }};
+    const razorpayOrderId = '{{ razorpay_order_id }}';
+    const razorpayKeyId = '{{ razorpay_key_id }}';
+    const amountPaise = {{ amount_paise }};
+    const isDemoMode = {% if demo_mode %}true{% else %} false{% endif %};
+    const verifyUrl = '{% url "verify_razorpay_payment" %}';
+    const csrfToken = '{{ csrf_token }}';
+
+    document.getElementById('pay-btn').addEventListener('click', function () {
+        if (isDemoMode) {
+            // Simulate payment in demo mode
+            this.disabled = true;
+            this.textContent = '⏳ Processing...';
+            fetch(verifyUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify({
+                    razorpay_order_id: razorpayOrderId,
+                    razorpay_payment_id: 'pay_demo_' + Date.now(),
+                    razorpay_signature: 'demo_signature',
+                    booking_id: bookingId
+                })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        this.textContent = '✅ Payment Successful!';
+                        this.style.background = 'var(--accent-color)';
+                        setTimeout(() => window.location.href = '/bookings/my-bookings/', 1500);
+                    }
+                });
+            return;
+        }
+
+        // Real Razorpay payment flow
+        const options = {
+            key: razorpayKeyId,
+            amount: amountPaise,
+            currency: 'INR',
+            name: 'LocalConnect',
+            description: 'Service Booking Payment',
+            order_id: razorpayOrderId,
+            handler: function (response) {
+                fetch(verifyUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                    body: JSON.stringify({
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_signature: response.razorpay_signature,
+                        booking_id: bookingId
+                    })
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            window.location.href = '/bookings/my-bookings/?payment=success';
+                        } else {
+                            alert('Payment verification failed. Please contact support.');
+                        }
+                    });
+            },
+            theme: { color: '#6366f1' },
+            prefill: {
+                name: '{{ booking.customer.first_name }} {{ booking.customer.last_name }}',
+                contact: '{{ booking.customer.phone }}',
+            },
+        };
+        const rzp = new Razorpay(options);
+        rzp.open();
+    });
+</script>
+{% endblock %}

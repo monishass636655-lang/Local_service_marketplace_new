@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from . import views
+from users import views as user_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,6 +27,7 @@ urlpatterns = [
 
     # Other apps
     path('services/', include('services.urls')),
+    path('providers/', user_views.providers_list, name='providers_list'),
     path('users/', include('users.urls')),
     path('bookings/', include('bookings.urls')),
     path('reviews/', include('reviews.urls')),

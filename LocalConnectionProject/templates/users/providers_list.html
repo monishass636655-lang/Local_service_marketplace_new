@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load custom_tags %}
+
+{% block title %}Providers | Local Service Marketplace{% endblock %}
+
+{% block content %}
+<section class="hero" style="padding: 3rem 1rem; text-align: center; margin-bottom: 2rem;">
+    <h1>Our Top Service Providers</h1>
+    <p>Connecting you with skilled, vetted professionals across Karnataka.</p>
+</section>
+
+<div class="dashboard-section">
+    <div class="start-format-grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
+        {% for data in providers %}
+        <div class="start-card" style="display: flex; flex-direction: column; gap: 1rem; position: relative;">
+
+            <div style="display: flex; gap: 1rem; align-items: flex-start;">
+                {% provider_image data.user data.user.id as prov_img %}
+                <img src="{{ prov_img }}" alt="{{ data.user.first_name }}"
+                    style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color); flex-shrink: 0;">
+                <div>
+                    <h3 style="margin: 0; font-size: 1.25rem;">{{ data.user.first_name }} {{ data.user.last_name }}</h3>
+                    <p
+                        style="color: var(--primary-color); font-size: 0.9rem; margin: 0.1rem 0 0.5rem 0; font-weight: 500;">
+                        @{{ data.user.username }}</p>
+                    <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
+                        <span class="badge badge-success">⭐ {{ data.avg_rating }}</span>
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">({{ data.review_count }}
+                            reviews)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                {% if data.profile %}
+                <p style="margin: 0; font-size: 0.95rem;"><strong>Experience:</strong> {{ data.profile.experience }}
+                    Years</p>
+                {% endif %}
+                <p style="margin: 0; font-size: 0.95rem;"><strong>Address:</strong> {{ data.user.location }}</p>
+                {% if data.profile and data.profile.price %}
+                <p style="margin: 0; font-size: 0.95rem;"><strong>Starting from:</strong> ${{ data.profile.price }}/hr
+                </p>
+                {% endif %}
+            </div>
+
+            {% if data.profile and data.profile.bio %}
+            <p style="font-size: 0.95rem; line-height: 1.5; color: var(--text-color); margin: 0;">
+                "{{ data.profile.bio|truncatechars:100 }}"
+            </p>
+            {% else %}
+            <p style="font-size: 0.95rem; line-height: 1.5; color: var(--text-muted); margin: 0; font-style: italic;">
+                Ready to help with your service needs.
+            </p>
+            {% endif %}
+
+        </div>
+        {% empty %}
+        <div class="start-card" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+            <h3>No providers found</h3>
+            <p>Our network is currently expanding. Please check back later.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

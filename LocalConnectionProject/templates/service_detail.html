@@ -1,15 +1,75 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Service Detail</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% load custom_tags %}
 
-<h1>{{ service.name }}</h1>
+{% block title %}{{ service.name }} | Local Service Marketplace{% endblock %}
 
-<p>{{ service.description }}</p>
+{% block content %}
+<div class="container" style="max-width: 800px; padding-top: 0;">
+    <a href="/services/" style="display: inline-block; margin-bottom: 2rem; color: var(--secondary-color);">&larr; Back
+        to Services</a>
 
-<a href="/services/">Back to Services</a>
+    <div class="stat-card" style="text-align: left; padding: 0; overflow: hidden;">
 
-</body>
-</html>
+        <!-- Contextual Header Image -->
+        <div style="width: 100%; height: 300px; position: relative;">
+            {% context_image service.category.name service.id as bg_img %}
+            <img src="{{ bg_img }}" alt="{{ service.category.name }}"
+                style="width: 100%; height: 100%; object-fit: cover;">
+            <div
+                style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 2rem;">
+                <h1 style="font-size: 2.5rem; margin: 0; color: #fff;">{{ service.name }}</h1>
+            </div>
+        </div>
+
+        <div style="padding: 2rem;">
+            <div
+                style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem;">
+                {% provider_image service.provider service.provider.id as prov_img %}
+                <img src="{{ prov_img }}" alt="{{ service.provider.first_name }}"
+                    style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
+                <div style="display: flex; flex-direction: column; gap: 0.2rem;">
+                    <span class="service-provider" style="font-size: 1.1rem; color: var(--text-color);">Expert:
+                        <strong>{{ service.provider.first_name }} {{ service.provider.last_name }}</strong></span>
+                    <span style="color: var(--primary-color); font-size: 0.9rem; font-weight: 500;">@{{
+                        service.provider.username }}</span>
+                </div>
+                <span class="badge badge-info" style="font-size: 1rem;">{{ service.category.name }}</span>
+                <span class="service-price" style="font-size: 1.25rem; margin-left: auto;">${{ service.price }}</span>
+            </div>
+
+            <h3 style="margin-bottom: 1rem; color: var(--secondary-color);">Service Description</h3>
+            <p style="font-size: 1.1rem; line-height: 1.8; margin-bottom: 2rem;">{{ service.description }}</p>
+
+            <div
+                style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: flex-start; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                <div style="flex: 1; min-width: 300px;">
+                    <span style="color: var(--secondary-color); font-size: 1rem; display: block; margin-bottom: 1rem;">
+                        </svg> Address: {{ service.provider.location }}
+                    </span>
+                </div>
+
+                <div
+                    style="flex: 1; min-width: 300px; background: var(--bg-color); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <h4 style="margin-bottom: 1rem;">Book this Service</h4>
+                    <form action="{% url 'book_service' service.id %}" method="POST"
+                        style="display: flex; flex-direction: column; gap: 1rem;">
+                        {% csrf_token %}
+                        <div>
+                            <label style="display: block; font-size: 0.9rem; margin-bottom: 0.25rem;">Date</label>
+                            <input type="date" name="date" required
+                                style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.9rem; margin-bottom: 0.25rem;">Time</label>
+                            <input type="time" name="time" required
+                                style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;">
+                        </div>
+                        <button type="submit" class="btn-primary"
+                            style="font-size: 1.1rem; padding: 0.75rem 2rem; margin-top: 0.5rem;">Confirm Booking
+                            Request</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
